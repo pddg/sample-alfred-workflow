@@ -6,8 +6,15 @@ on:
       - "**"
 
 jobs:
-  release:
-    runs-on: macOS-10.15
+  build:
+    env:
+      GOLANGCI_LINT_VERSION: v1.21.0
+    strategy:
+      matrix:
+        os:
+          - macos-10.14
+          - macos-10.15
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout source codes
         uses: actions/checkout@v1
@@ -24,13 +31,28 @@ jobs:
         id: cache
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-v1-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-v1-
 
       - name: download modules
         if: steps.cache.outputs.cache-hit != 'true'
         run: go mod download
+
+      - name: Restore golangci-lint if available
+        uses: actions/cache@v1
+        id: cache
+        with:
+          path: ./bin/
+          key: ${{ runner.os }}-golangci-${{ env.GOLANGCI_LINT_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-go-v1-
+
+      - name: Install golangci-lint
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s $GOLANGCI_LINT_VERSION
+
+      - name: Lint
+        run: ./bin/golangci-lint run ./... -v
 
       - name: Build
         run: make
