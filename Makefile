@@ -14,5 +14,5 @@ $(CREDITS): go.sum
 $(EXEC_BIN): $(GO_SRCS)
 	go build -o $(EXEC_BIN) .
 
-$(DIST_FILE): $(EXEC_BIN) $(CREDITS) $(PLIST)
-	zip -r $(DIST_FILE) $(PLIST) $(CREDITS) $(EXEC_BIN)
+$(DIST_FILE): $(EXEC_BIN) $(CREDITS) $(PLIST) LICENSE
+	zip -r $(DIST_FILE) $(PLIST) $(CREDITS) $(EXEC_BIN) LICENSE
